@@ -13,11 +13,11 @@ class Generator(nn.Module):
             PixelNorm(),
             nn.ConvTranspose2d(z_dim, in_channels, kernel_size=4, stride=1, padding=0),
             nn.LeakyReLU(0.2),
-            WSConv2d(in_channels, in_channels),
+            WSConv2d(in_channels, in_channels, kernel_size=3, stride=1, padding=1 ),
             nn.LeakyReLU(0.2),
             PixelNorm())
 
-        self.initial_rgb = WSConv2d(in_channels, img_channels, kernel_size=1, stride=1)
+        self.initial_rgb = WSConv2d(in_channels, img_channels, kernel_size=1, stride=1, padding=0)
         self.progressive_block, self.rgb_layer = nn.ModuleList(), nn.ModuleList()
         self.rgb_layer.append(self.initial_rgb)
 
@@ -25,7 +25,7 @@ class Generator(nn.Module):
             conv_in_channels = int(in_channels * self.factors[i])
             conv_out_channels = int(in_channels * self.factors[i+1])
             self.progressive_block.append(ConvBlock(conv_in_channels, conv_out_channels))
-            self.rgb_layer.append(WSConv2d(conv_out_channels, img_channels, kernel_size=1, stride=1))
+            self.rgb_layer.append(WSConv2d(conv_out_channels, img_channels, kernel_size=1, stride=1, padding=0))
 
     def fade_in(self, alpha, upscale, generated):
         return torch.tanh(alpha * generated + (1 - alpha) * upscale)
